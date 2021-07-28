@@ -13,9 +13,11 @@ import io.camunda.zeebe.broker.system.partitions.PartitionStartupStep;
 import io.camunda.zeebe.broker.system.partitions.SnapshotReplication;
 import io.camunda.zeebe.broker.system.partitions.impl.NoneSnapshotReplication;
 import io.camunda.zeebe.broker.system.partitions.impl.StateReplication;
+import io.camunda.zeebe.util.startup.AbstractStartupStep;
 import java.util.concurrent.CompletableFuture;
 
-public class SnapshotReplicationPartitionStartupStep implements PartitionStartupStep {
+public class SnapshotReplicationPartitionStartupStep
+    extends AbstractStartupStep<PartitionStartupContext> implements PartitionStartupStep {
 
   @Override
   public String getName() {
@@ -23,7 +25,8 @@ public class SnapshotReplicationPartitionStartupStep implements PartitionStartup
   }
 
   @Override
-  public CompletableFuture<PartitionStartupContext> startup(final PartitionStartupContext context) {
+  public CompletableFuture<PartitionStartupContext> startupGuarded(
+      final PartitionStartupContext context) {
     final SnapshotReplication replication =
         shouldReplicateSnapshots(context)
             ? new StateReplication(
@@ -35,7 +38,7 @@ public class SnapshotReplicationPartitionStartupStep implements PartitionStartup
   }
 
   @Override
-  public CompletableFuture<PartitionStartupContext> shutdown(
+  public CompletableFuture<PartitionStartupContext> shutdownGuarded(
       final PartitionStartupContext context) {
     try {
       if (context.getSnapshotReplication() != null) {
